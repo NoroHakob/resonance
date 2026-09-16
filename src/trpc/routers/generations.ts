@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/nextjs";
 import { z } from "zod";
 import { env } from "@/lib/env";
 import { TRPCError } from "@trpc/server";
@@ -96,8 +97,13 @@ export const generationsRouter = createTRPCRouter({
         parseAs: "arrayBuffer",
       });
 
+      Sentry.logger.info("Generation started", {
+        orgId: ctx.orgId,
+        voiceId: input.voiceId,
+        textLength: input.text.length,
+      });
+
       if (error) {
-        console.error("CHATTERBOX ERROR:", error);
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Failed to generate audio",
@@ -145,6 +151,11 @@ export const generationsRouter = createTRPCRouter({
             r2ObjectKey,
           },
         });
+
+        Sentry.logger.info("Audio generated", {
+          orgId: ctx.orgId,
+          generationId: generation.id,
+        });
       } catch (e) {
         console.error("UPLOAD ERROR:", e);
         if (generationId) {
@@ -156,6 +167,11 @@ export const generationsRouter = createTRPCRouter({
             })
             .catch(() => {});
         }
+
+        Sentry.logger.error("Generation failed", {
+          orgId: ctx.orgId,
+          voiceId: input.voiceId,
+        });
 
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
