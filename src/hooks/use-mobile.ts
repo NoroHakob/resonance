@@ -2,16 +2,16 @@ import * as React from "react"
 
 const MOBILE_BREAKPOINT = 1024
 
-function subscribe(callback: () => void) {
-  const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`)
-  mql.addEventListener("change", callback)
-  return () => mql.removeEventListener("change", callback)
-}
-
 export function useIsMobile() {
-  return React.useSyncExternalStore(
-    subscribe,
+  const isMobile = React.useSyncExternalStore(
+    (onChange) => {
+      const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`)
+      mql.addEventListener("change", onChange)
+      return () => mql.removeEventListener("change", onChange)
+    },
     () => window.innerWidth < MOBILE_BREAKPOINT,
-    () => false
+    () => false,
   )
+
+  return isMobile
 }

@@ -157,7 +157,6 @@ export const generationsRouter = createTRPCRouter({
           generationId: generation.id,
         });
       } catch (e) {
-        console.error("UPLOAD ERROR:", e);
         if (generationId) {
           await prisma.generation
             .delete({
